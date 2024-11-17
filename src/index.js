@@ -59,9 +59,10 @@ app.post('/image-generation', async (req, res) => {
       res.status(500).json({ error: "Erro ao gerar a imagem: Resposta da API incompleta ou vazia" }); // Erro no formato JSON
     }
   } catch (error) {
-    console.error("Erro ao gerar a imagem:", error);
+    // console.error("Erro ao gerar a imagem:", error);
     const status = error.status || 500;
-    res.status(status).json({ error: "Erro interno do servidor" }); // Sempre enviar JSON
+    console.log(error)
+    res.status(status).json({ message: error }); // Sempre enviar JSON
   }
 
   // simulando uma resposta com um tempo para testar o loading

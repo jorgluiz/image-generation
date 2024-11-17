@@ -79,7 +79,7 @@
       /* Ocupará toda a largura do contêiner pai */
       max-width: 600px;
       /* Limite máximo */
-      min-width: 200px;
+      min-width: 250px;
       /* Limite mínimo */
       height: 100px;
       border: none;
@@ -127,7 +127,7 @@
 
 <body>
   <div class="container">
-    <h1>Escolha apenas uma opção</h1>
+    <h1 style="text-align: center;">Escolha apenas uma opção</h1>
 
     <p>style image:</p>
     <div class="radio-container">
@@ -153,7 +153,6 @@
       <div class="spinner"></div>
     </div>
   </div>
-  <!-- Overlay para o zoom -->
   <div class="zoom-overlay" id="zoomOverlay" onclick="closeZoom()">
     <img src="" id="zoomedImg" alt="Zoomed Image">
   </div>
@@ -176,12 +175,225 @@
         body: JSON.stringify({ textGenerateImage: text.value, styleImage: selectedOption.value })
       }).then(async (response) => {
         const generatedImage = await response.json()
+
+        if (generatedImage.message.status === 400) {
+          alert(generatedImage.message.code)
+        }
         const img = document.getElementById('imgID')
         img.style.display = "block"
         img.src = generatedImage.url
         document.querySelector('.spinner-img').style.display = "none"
       }).catch(error => {
-        console.error("Erro capturado no cliente:", error.message);
+        console.log("Erro capturado no cliente:", error);
+        alert('Your request was rejected as a result of our safety system. Your prompt may contain text that is not allowed by our safety system.')
+      }).finally(() => {
+        document.querySelector('.spinner-img').style.display = "none"; // Ocultar spinner
+      });
+    }
+
+    const zoomImg = () => {
+      const img = document.getElementById('imgID');
+      const zoomOverlay = document.getElementById('zoomOverlay');
+      const zoomedImg = document.getElementById('zoomedImg');
+
+      zoomedImg.src = img.src; // Definir a mesma imagem no overlay
+      zoomOverlay.classList.add('active'); // Mostrar o overlay
+      document.body.style.overflow = 'hidden'; // Desativar scroll
+    };
+
+    const closeZoom = () => {
+      const zoomOverlay = document.getElementById('zoomOverlay');
+      zoomOverlay.classList.remove('active'); // Esconder o overlay
+      document.body.style.overflow = 'auto'; // Reativar scroll
+    };
+  </script>
+</body>
+
+</html>
+
+<!-- <!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <style>
+    body {
+      padding: 0;
+      margin: 0;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-family: Arial, sans-serif;
+    }
+
+
+    .container {
+      margin-top: 100px;
+    }
+
+    img {
+      margin-top: 30px;
+      width: 700px;
+      height: 700px;
+      max-width: 100%;
+      cursor: zoom-in;
+      display: none;
+    }
+
+    @media (max-width: 768px) {
+      img {
+        width: 300px;
+        height: 300px;
+      }
+
+      .container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+    }
+
+    /* Estilo para o overlay de zoom */
+    .zoom-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      visibility: hidden;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .zoom-overlay img {
+      max-width: 90%;
+      max-height: 90%;
+      cursor: zoom-out;
+      transition: transform 0.3s ease;
+      display: block;
+      /* Garante que a imagem seja exibida */
+    }
+
+    .zoom-overlay.active {
+      visibility: visible;
+      opacity: 1;
+    }
+
+    textarea {
+      width: 100%;
+      /* Ocupará toda a largura do contêiner pai */
+      max-width: 600px;
+      /* Limite máximo */
+      min-width: 250px;
+      /* Limite mínimo */
+      height: 100px;
+      border: none;
+      border-radius: 10px;
+      background-color: #f4f4f4;
+    }
+
+    #option1,
+    #option2 {
+      cursor: pointer;
+    }
+
+    .spinner-img {
+      display: none;
+    }
+
+    .container-spinner {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 10;
+    }
+
+    .spinner {
+      width: 60px;
+      height: 60px;
+      border: 5px solid rgba(255, 255, 255, 0.3);
+      border-top: 5px solid #1508d3;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h1 style="text-align: center;">Escolha apenas uma opção</h1>
+
+    <p>style image:</p>
+    <div class="radio-container">
+      <label for="option1">vivid</label>
+      <input style="margin-left: 20px;" type="radio" id="option1" name="choices" value="vivid">
+    </div>
+
+    <div class="radio-container">
+      <label for="option2">natural</label>
+      <input type="radio" id="option2" name="choices" value="natural">
+    </div>
+    <p>Digite um texto...</p>
+    <div class="imageGenerator">
+      <textarea id="textID" placeholder="coloque o texto aqui" rows="4"></textarea>
+      <div style="position: relative;">
+        <button style="position: absolute; bottom: 0; cursor: pointer;" onclick="imageGenerator()">GERAR IMAGEM</button>
+      </div>
+    </div>
+  </div>
+  <img src="" alt="Generated Image" id="imgID" onclick="zoomImg()">
+  <div class="spinner-img" style="position: relative; margin-top: 50px;">
+    <div class="container-spinner">
+      <div class="spinner"></div>
+    </div>
+  </div>
+  <div class="zoom-overlay" id="zoomOverlay" onclick="closeZoom()">
+    <img src="" id="zoomedImg" alt="Zoomed Image">
+  </div>
+
+  <script>
+    const imageGenerator = () => {
+      var text = document.getElementById("textID")
+      const selectedOption = document.querySelector('input[name="choices"]:checked');
+
+      if (!text.value) {
+        text.style.border = "1px solid red"
+        return
+      }
+      if (!selectedOption.value) return
+
+      fetch('/image-generation', {
+        method: 'POST',
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ textGenerateImage: text.value, styleImage: selectedOption.value })
+      }).then(async (response) => {
+        const generatedImage = await response.json()
+        console.log(generatedImage)
+        const img = document.getElementById('imgID')
+        img.style.display = "block"
+        img.src = generatedImage.url
+        document.querySelector('.spinner-img').style.display = "none"
+      }).catch(error => {
+        console.log("Erro capturado no cliente:", error);
         alert('Your request was rejected as a result of our safety system. Your prompt may contain text that is not allowed by our safety system.')
       })
     }
@@ -204,4 +416,4 @@
   </script>
 </body>
 
-</html>
+</html> -->
